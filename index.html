@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+
+<title>Plot Path Demo Using Google Maps JavaScript API v3</title>
+<link href="http://code.google.com/apis/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" />
+
+<style>
+.trip {
+	height: 50px;
+	border-bottom: 1px solid red;
+}
+.active {
+	background-color: #f5f5dc;
+}
+</style>
+
+<!--
+jQuery
+-->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<!--Google API Javascript Reference-->
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script> 
+<script>
+
+var poly;
+var map;
+var GPSData = [];
+ 
+function prepare(data) {
+	var i, trip, start;
+	var $trips = $('#trips');
+	// Get summary of each trip
+	for (i = 0; i < data.length; i++) {
+		trip = data[ i ];
+		start = trip[0];
+		end = trip[ trip.length-1 ];
+
+		html = '<div class="trip" data-index="' + i + '">' + start.title + '<br />' + end.title + '</div>';
+		$trips.append(html);
+	}
+}
+
+function PlotGPSPoints(points) {
+
+	var p = points[0];
+	var cmloc = new google.maps.LatLng(p.latitude, p.longitude);
+	var myoptions = {
+		zoom: 16,
+		center: cmloc,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+
+	map = new google.maps.Map(document.getElementById('map_canvas'), myoptions);
+
+	var polyoptions = {
+		strokeColor: 'blue',
+		strokeOpacity: 0.5,
+		strokeWeight: 3
+	}
+	poly = new google.maps.Polyline(polyoptions);
+	poly.setMap(map);
+
+	var path = poly.getPath();
+
+
+	var i = 0;
+	var marker;
+	var ll;
+	for (i = 0; i < points.length; i++) {
+		p = points[ i ];
+		// create a line of JavaScript for marker on map for this record 
+		path.push(new google.maps.LatLng(p.latitude, p.longitude));
+
+		ll = new google.maps.LatLng(p.latitude, p.longitude);
+		marker = new google.maps.Marker({
+			position: ll,
+			title: p.title,
+			map: map
+		});
+		if (i == 0) {
+			color = '#008000';
+		} else {
+			if (i == points.length - 1) {
+				color = '#ff0000';
+			} else {
+				color = '#003366';
+			}
+		}
+		circ = new google.maps.Circle({
+			center: ll,
+			fillColor: color,
+			fillOpacity: 0.5,
+			strokeColor: color,
+			strokeOpacity: 1.0,
+			radius: p.accuracy,
+			map: map
+		});
+	}
+}
+
+
+
+jQuery(document).ready(function() {
+	$('#trips').delegate('div', 'click', function(e) {
+		var $el = $(this);
+		var trip = GPSData[ $el.data('index') ];
+		$('#trips div').removeClass('active');
+		$el.addClass('active');
+		// Clear map
+		// Walk GPS points
+		PlotGPSPoints( trip );
+		// Draw lines
+	});
+
+	prepare(GPSData);
+});
+
+
+</script>
+
+</head>
+<body>
+	<div id="trips" style="float: right; width: 300px; height: 900px; overflow: scroll;"></div>
+	<div id="map_canvas" style="width: 800px; height: 600px;"></div>
+</body> 
+</html>
