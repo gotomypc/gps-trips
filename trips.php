@@ -4,7 +4,7 @@ date_default_timezone_set('America/Los_Angeles');
 require('/home/alan/coding/projects/dbFacile/src/dbFacile_sqlite3.php');
 
 $db = new dbFacile_sqlite3();
-$db->open('20120808.sqlite3');
+$db->open('20120813.sqlite3');
 
 
 $trips = array();
